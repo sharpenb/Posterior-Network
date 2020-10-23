@@ -6,7 +6,7 @@ This repository presents the experiments of the paper:
 Bertrand Charpentier, Daniel Zügner, Stephan Günnemann<br>
 Conference on Neural Information Processing Systems (NeurIPS), 2020.
 
-[[Paper](https://arxiv.org/pdf/2006.09239.pdf)]
+[[Paper](https://arxiv.org/pdf/2006.09239.pdf)|[Video](https://www.youtube.com/watch?v=8MzI4K6sHjk)]
 
 ![Diagram](diagram-1.png?raw=true "Diagram")
 
