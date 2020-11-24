@@ -33,7 +33,7 @@ To dowload the datasets, follow the following links:
 
 ## Pre-trained Models
 
-You can find pre-trained models in the folder `saved_models`.
+You can find pre-trained models in the folder `saved_models`. Models in `saved_models/MNIST-postnet` and `saved_models/CIFAR10-postnet` are trained on classic MNIST and CIFAR10 splits.
 
 ## Cite
 Please cite our paper if you use the model or this code in your own work:
