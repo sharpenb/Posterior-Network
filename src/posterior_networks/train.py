@@ -110,4 +110,4 @@ def train_sequential(model, train_loader, val_loader, max_epochs=200, frequency=
     return train_losses_1 + train_losses_2, \
            val_losses_1 + val_losses_2, \
            train_accuracies_1 + train_accuracies_2, \
-           val_accuracies_1 + val_accuracies_2, \
+           val_accuracies_1 + val_accuracies_2
