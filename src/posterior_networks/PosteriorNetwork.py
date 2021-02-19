@@ -9,6 +9,7 @@ from src.architectures.vgg_sequential import vgg16_bn
 from src.architectures.resnet_sequential import resnet18
 from src.architectures.alexnet_sequential import alexnet
 from src.posterior_networks.NormalizingFlowDensity import NormalizingFlowDensity
+from src.posterior_networks.BatchedNormalizingFlowDensity import BatchedNormalizingFlowDensity
 from src.posterior_networks.MixtureDensity import MixtureDensity
 
 __budget_functions__ = {'one': lambda N: torch.ones_like(N),
@@ -90,6 +91,8 @@ class PosteriorNetwork(nn.Module):
             self.density_estimation = nn.ModuleList([NormalizingFlowDensity(dim=self.latent_dim, flow_length=n_density, flow_type=self.density_type) for c in range(self.output_dim)])
         elif self.density_type == 'radial_flow':
             self.density_estimation = nn.ModuleList([NormalizingFlowDensity(dim=self.latent_dim, flow_length=n_density, flow_type=self.density_type) for c in range(self.output_dim)])
+        elif self.density_type == 'batched_radial_flow':
+            self.density_estimation = BatchedNormalizingFlowDensity(c=self.output_dim, dim=self.latent_dim, flow_length=n_density, flow_type=self.density_type.replace('batched_', ''))
         elif self.density_type == 'iaf_flow':
             self.density_estimation = nn.ModuleList([NormalizingFlowDensity(dim=self.latent_dim, flow_length=n_density, flow_type=self.density_type) for c in range(self.output_dim)])
         elif self.density_type == 'normal_mixture':
@@ -104,6 +107,9 @@ class PosteriorNetwork(nn.Module):
     def forward(self, input, soft_output, return_output='hard', compute_loss=True):
         batch_size = input.size(0)
 
+        if self.N.device != input.device:
+            self.N = self.N.to(input.device)
+
         if self.budget_function == 'parametrized':
             N = self.N / self.N.sum()
         else:
@@ -111,18 +117,26 @@ class PosteriorNetwork(nn.Module):
 
         # Forward
         zk = self.sequential(input)
-        if self.no_density: # Ablated model without density estimation
+        if self.no_density:  # Ablated model without density estimation
             logits = self.linear_classifier(zk)
             alpha = torch.exp(logits)
             soft_output_pred = self.softmax(logits)
-        else: # Full model with density estimation
+        else:  # Full model with density estimation
             zk = self.batch_norm(zk)
             log_q_zk = torch.zeros((batch_size, self.output_dim)).to(zk.device.type)
             alpha = torch.zeros((batch_size, self.output_dim)).to(zk.device.type)
-            for c in range(self.output_dim): # Sequential treatment of density estimations could be vectorized for higher speed.
-                log_p = self.density_estimation[c].log_prob(zk)
-                log_q_zk[:, c] = log_p
-                alpha[:, c] = 1. + (N[c] * torch.exp(log_q_zk[:, c]))
+
+            if isinstance(self.density_estimation, nn.ModuleList):
+                for c in range(self.output_dim):
+                    log_p = self.density_estimation[c].log_prob(zk)
+                    log_q_zk[:, c] = log_p
+                    alpha[:, c] = 1. + (N[c] * torch.exp(log_q_zk[:, c]))
+            else:
+                log_q_zk = self.density_estimation.log_prob(zk)
+                alpha = 1. + (N[:, None] * torch.exp(log_q_zk)).permute(1, 0)
+
+            pass
+
             soft_output_pred = torch.nn.functional.normalize(alpha, p=1)
         output_pred = self.predict(soft_output_pred)
 
