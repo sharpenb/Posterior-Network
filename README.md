@@ -2,7 +2,7 @@
 
 This repository presents the experiments of the paper:
 
-[Posterior Network: Uncertainty Estimation without OOD Samples via Density-Based Pseudo-Counts](http://papers.nips.cc/paper/9445-uncertainty-on-asynchronous-time-event-prediction.pdf)<br>
+[Posterior Network: Uncertainty Estimation without OOD Samples via Density-Based Pseudo-Counts](https://papers.nips.cc/paper/2020/file/0eac690d7059a8de4b48e90f14510391-Paper.pdf)<br>
 Bertrand Charpentier, Daniel Zügner, Stephan Günnemann<br>
 Conference on Neural Information Processing Systems (NeurIPS), 2020.
 
